@@ -1,4 +1,4 @@
-import * as DRange from "drange";
+import DRange from 'drange';
 
 type SubRange = DRange.SubRange;
 
@@ -31,4 +31,4 @@ drange.toString(); // $ExpectType string
 
 drange.numbers(); // $ExpectType number[]
 
-drange.subranges(); // $ExpectType SubRange[]
+const _subranges: SubRange[] = drange.subranges();
