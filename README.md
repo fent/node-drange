@@ -2,8 +2,8 @@
 
 For adding/subtracting sets of range of numbers.
 
-[![Build Status](https://secure.travis-ci.org/fent/node-drange.svg)](http://travis-ci.org/fent/node-drange)
-![Depfu](https://img.shields.io/depfu/fent/node-drange)
+[![npm version](https://img.shields.io/npm/v/drange.svg)](https://npmjs.org/package/drange)
+[![Node CI](https://github.com/fent/node-drange/actions/workflows/nodejs.yml/badge.svg)](https://github.com/fent/node-drange/actions/workflows/nodejs.yml)
 [![codecov](https://codecov.io/gh/fent/node-drange/branch/master/graph/badge.svg)](https://codecov.io/gh/fent/node-drange)
 
 # Usage
