@@ -33,7 +33,7 @@
     "typescript": "^7.0.2"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=20"
   },
   "license": "MIT",
   "types": "./types"
