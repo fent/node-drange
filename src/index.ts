@@ -65,7 +65,7 @@ class SubRange {
 }
 
 const toSubRange = (low: number, high?: number): SubRange =>
-  new SubRange(low, high ?? low);
+  new SubRange(low, high === undefined ? low : high);
 
 /**
  * For adding/subtracting sets of range of numbers.
