@@ -1,35 +1,39 @@
-/* eslint indent: ["warn", 4] */
+const rangeLength = (low: number, high: number): number => 1 + high - low;
 
 // Private helper class
 class SubRange {
-  constructor(low, high) {
+  public low: number;
+  public high: number;
+  public length: number;
+
+  constructor(low: number, high: number) {
     this.low = low;
     this.high = high;
-    this.length = 1 + high - low;
+    this.length = rangeLength(low, high);
   }
 
-  overlaps(range) {
+  overlaps(range: SubRange): boolean {
     return range.low <= this.high && this.low <= range.high;
   }
 
-  touches(range) {
+  touches(range: SubRange): boolean {
     return range.low <= this.high + 1 && this.low - 1 <= range.high;
   }
 
-  covers(range) {
+  covers(range: SubRange): boolean {
     return this.low <= range.low && range.high <= this.high;
   }
 
-  isInside(range) {
+  isInside(range: SubRange): boolean {
     return range.low < this.low && this.high < range.high;
   }
 
-  isBefore(range) {
+  isBefore(range: SubRange): boolean {
     return this.high < range.low;
   }
 
   // Returns inclusive combination of SubRanges as a SubRange.
-  add(range) {
+  add(range: SubRange): SubRange {
     return new SubRange(
       Math.min(this.low, range.low),
       Math.max(this.high, range.high),
@@ -38,7 +42,7 @@ class SubRange {
 
   // Returns subtraction of SubRanges as an array of SubRanges.
   // (There's a case where subtraction divides it in 2)
-  subtract(range) {
+  subtract(range: SubRange): SubRange[] {
     if (range.covers(this)) {
       return [];
     } else if (range.isInside(this)) {
@@ -53,28 +57,60 @@ class SubRange {
     }
   }
 
-  toString() {
+  toString(): string {
     return this.low === this.high
       ? this.low.toString()
       : `${this.low}-${this.high}`;
   }
 }
 
+const toSubRange = (low: number, high?: number): SubRange =>
+  new SubRange(low, high ?? low);
+
+/**
+ * For adding/subtracting sets of range of numbers.
+ */
 class DRange {
-  constructor(a, b) {
+  static DRange = DRange;
+  static default = DRange;
+
+  private ranges: SubRange[];
+
+  /**
+   * The total length of all subranges.
+   */
+  public length: number;
+
+  /**
+   * Creates a new instance of DRange.
+   */
+  constructor(low?: number, high?: number);
+  constructor(drange: DRange);
+  constructor(a?: number | DRange, b?: number) {
     this.ranges = [];
     this.length = 0;
-    if (a != null) this.add(a, b);
+    if (a != null) {
+      if (a instanceof DRange) this.add(a);
+      else this.add(a, b);
+    }
   }
 
-  _update_length() {
+  private _update_length(): void {
     this.length = this.ranges.reduce((previous, range) => {
       return previous + range.length;
     }, 0);
   }
 
-  add(a, b) {
-    const _add = (subrange) => {
+  /**
+   * Adds a subrange.
+   */
+  add(low: number, high?: number): this;
+  /**
+   * Adds all of another DRange's subranges.
+   */
+  add(drange: DRange): this;
+  add(a: number | DRange, b?: number): this {
+    const _add = (subrange: SubRange): void => {
       let i = 0;
       while (
         i < this.ranges.length &&
@@ -96,14 +132,21 @@ class DRange {
     if (a instanceof DRange) {
       a.ranges.forEach(_add);
     } else {
-      if (b == null) b = a;
-      _add(new SubRange(a, b));
+      _add(toSubRange(a, b));
     }
     return this;
   }
 
-  subtract(a, b) {
-    const _subtract = (subrange) => {
+  /**
+   * Subtracts a subrange.
+   */
+  subtract(low?: number, high?: number): this;
+  /**
+   * Subtracts all of another DRange's subranges.
+   */
+  subtract(drange: DRange): this;
+  subtract(a?: number | DRange, b?: number): this {
+    const _subtract = (subrange: SubRange): void => {
       let i = 0;
       while (i < this.ranges.length && !subrange.overlaps(this.ranges[i])) {
         i++;
@@ -119,16 +162,23 @@ class DRange {
 
     if (a instanceof DRange) {
       a.ranges.forEach(_subtract);
-    } else {
-      if (b == null) b = a;
-      _subtract(new SubRange(a, b));
+    } else if (a != null) {
+      _subtract(toSubRange(a, b));
     }
     return this;
   }
 
-  intersect(a, b) {
-    const newRanges = [];
-    const _intersect = (subrange) => {
+  /**
+   * Keep only subranges that overlap the given subrange.
+   */
+  intersect(low?: number, high?: number): this;
+  /**
+   * Intersect all of another DRange's subranges.
+   */
+  intersect(drange: DRange): this;
+  intersect(a?: number | DRange, b?: number): this {
+    const newRanges: SubRange[] = [];
+    const _intersect = (subrange: SubRange): void => {
       let i = 0;
       while (i < this.ranges.length && !subrange.overlaps(this.ranges[i])) {
         i++;
@@ -143,16 +193,18 @@ class DRange {
 
     if (a instanceof DRange) {
       a.ranges.forEach(_intersect);
-    } else {
-      if (b == null) b = a;
-      _intersect(new SubRange(a, b));
+    } else if (a != null) {
+      _intersect(toSubRange(a, b));
     }
     this.ranges = newRanges;
     this._update_length();
     return this;
   }
 
-  index(index) {
+  /**
+   * Get the number at the specified index.
+   */
+  index(index: number): number {
     let i = 0;
     while (i < this.ranges.length && this.ranges[i].length <= index) {
       index -= this.ranges[i].length;
@@ -161,15 +213,21 @@ class DRange {
     return this.ranges[i].low + index;
   }
 
-  toString() {
+  toString(): string {
     return `[ ${this.ranges.join(', ')} ]`;
   }
 
-  clone() {
-    return new DRange(this);
+  /**
+   * Clones the drange, so that changes to it are not reflected on its clone.
+   */
+  clone(): this {
+    return new DRange(this) as this;
   }
 
-  numbers() {
+  /**
+   * Get contained numbers.
+   */
+  numbers(): number[] {
     return this.ranges.reduce((result, subrange) => {
       let i = subrange.low;
       while (i <= subrange.high) {
@@ -177,16 +235,32 @@ class DRange {
         i++;
       }
       return result;
-    }, []);
+    }, [] as number[]);
   }
 
-  subranges() {
+  /**
+   * Get copy of subranges.
+   */
+  subranges(): DRange.SubRange[] {
     return this.ranges.map((subrange) => ({
       low: subrange.low,
       high: subrange.high,
-      length: 1 + subrange.high - subrange.low,
+      length: rangeLength(subrange.low, subrange.high),
     }));
   }
 }
 
+namespace DRange {
+  export interface SubRange {
+    low: number;
+    high: number;
+    length: number;
+  }
+}
+
+// Statically recognizable exports for Node.js cjs-module-lexer (ESM named import support)
 module.exports = DRange;
+module.exports.default = DRange;
+module.exports.DRange = DRange;
+
+export = DRange;

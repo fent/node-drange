@@ -92,19 +92,13 @@ Tests are written with [mocha](https://mochajs.org)
 
     npm test
 
-# Integration with TypeScript
+# TypeScript
 
-DRange includes TypeScript definitions.
+DRange ships with TypeScript definitions.
 
 ```typescript
-import * as DRange from "drange";
-const range: DRange = new Drange(2, 5);
+import DRange from 'drange'; // requires esModuleInterop
 ```
-
-Use dtslint to check the definition file.
-
-    npm install -g dtslint
-    npm run dtslint
 
 # Security
 

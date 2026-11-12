@@ -9,7 +9,7 @@
     "strictFunctionTypes": true,
     "esModuleInterop": true,
     "paths": {
-      "drange": ["./index.d.ts"]
+      "drange": ["../../dist/index.d.ts"]
     }
   }
 }

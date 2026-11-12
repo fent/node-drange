@@ -1,7 +1,6 @@
-const assert = require('node:assert');
-const DRange = require('..');
+import assert from 'node:assert';
+import DRange from '../src';
 
-/* eslint indent: ["warn", 4] */
 describe('empty drange', () => {
   it('should initialize with no subranges', () => {
     const drange = new DRange();
@@ -154,6 +153,23 @@ describe('accessing numbers', () => {
     assert.deepStrictEqual([1, 3, 4, 6], numbers);
     drange.subtract(3);
     assert.deepStrictEqual([1, 3, 4, 6], numbers);
+  });
+});
+
+describe('module exports', () => {
+  it('exposes default and named DRange exports', () => {
+    assert.equal(DRange.default, DRange);
+    assert.equal(DRange.DRange, DRange);
+  });
+});
+
+describe('legacy value coercion', () => {
+  it('keeps accepting numeric strings from untyped callers', () => {
+    const drange = new DRange(
+      '5' as unknown as number,
+      '10' as unknown as number,
+    );
+    assert.equal(drange.toString(), '[ 5-10 ]');
   });
 });
 
